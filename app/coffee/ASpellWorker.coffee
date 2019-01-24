@@ -9,7 +9,7 @@ class ASpellWorker
 	constructor: (language) ->
 		@language = language
 		@count = 0
-		@pipe = child_process.spawn("aspell", ["pipe", "-t", "--encoding=utf-8", "-d", language])
+		@pipe = child_process.spawn("hunspell", ["-a", "-t", "--encoding=utf-8", "-d", 'en_GB'])
 		logger.info process: @pipe.pid, lang: @language, "starting new aspell worker"
 		metrics.inc "aspellWorker", 1, {status: "start", method: @language}
 		@pipe.on 'exit', () =>
