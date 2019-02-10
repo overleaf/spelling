@@ -8,10 +8,10 @@ shopt -s extglob
 mkdir $TMP_DIR $OUT_DIR 
 
 #There's something odd about gl-minimos
-DICTIONARIES=`aspell dicts | grep -v ^gl$`
+DICTIONARIES=${1:-`aspell dicts | grep -v ^gl$`}
+echo $DICTIONARIES
 
 for DICTIONARY in $DICTIONARIES; do
-  echo "Testing dictionary $DICTIONARY"
   if [ "$DICTIONARY" = "gl-minimos" ]; then
     LANG="gl-minimos"
   elif [ "$DICTIONARY" = "pt_BR" ]; then
@@ -31,10 +31,12 @@ for DICTIONARY in $DICTIONARIES; do
 
   cat $WORDLIST | head -n 5 | tr '\n' ' ' >> ${TEX_FILE}
   cat $WORDLIST | tail -n 5 | tr -d '\n'  >> ${TEX_FILE}
+  echo " " | tr -d '\n' >> ${TEX_FILE}
   cat $WORDLIST | head -n 5 | tr '\n' ' ' >> ${TEX_FILE}
   echo "" >> ${TEX_FILE}
   echo "\end{document}" >> ${TEX_FILE}
 
-  cat ${TEX_FILE} | aspell pipe -t  -d ${DICTIONARY}
+  OUTPUT=`cat ${TEX_FILE} | aspell pipe -t  -d ${DICTIONARY} | tr -d '\n'`
+  [[ $OUTPUT =~ \*{5}[#\&\?]\ .*\*{5} ]] && echo "$DICTIONARY is OKAY" || echo "$DICTIONARY is NOT OKAY"
   
 done
