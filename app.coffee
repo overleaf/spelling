@@ -31,7 +31,7 @@ server.get "/status", (req, res)->
 
 server.get "/health_check", HealthCheckController.healthCheck
 
-profiler = require "v8-profiler"
+profiler = require "v8-profiler-node8"
 server.get "/profile", (req, res) ->
 	time = parseInt(req.query.time || "1000")
 	profiler.startProfiling("test")
