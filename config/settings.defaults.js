@@ -1,18 +1,24 @@
-Path = require('path')
+let Settings;
+const Path = require('path');
 
-module.exports = Settings =
-	internal:
-		spelling:
-			port: 3005
-			host: process.env["LISTEN_ADDRESS"] or "localhost"
+module.exports = (Settings = {
+	internal: {
+		spelling: {
+			port: 3005,
+			host: process.env["LISTEN_ADDRESS"] || "localhost"
+		}
+	},
 		
-	mongo:
-		url: process.env['MONGO_CONNECTION_STRING'] or "mongodb://#{process.env["MONGO_HOST"] or "localhost"}/sharelatex"
+	mongo: {
+		url: process.env['MONGO_CONNECTION_STRING'] || `mongodb://${process.env["MONGO_HOST"] || "localhost"}/sharelatex`
+	},
 
-	cacheDir: Path.resolve "cache"
+	cacheDir: Path.resolve("cache"),
 
 
-	healthCheckUserId: "53c64d2fd68c8d000010bb5f"
+	healthCheckUserId: "53c64d2fd68c8d000010bb5f",
 
-	sentry:
+	sentry: {
 		dsn: process.env.SENTRY_DSN
+	}
+});
