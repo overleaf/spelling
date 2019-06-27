@@ -1,40 +1,56 @@
-db = require("./DB")
-mongoCache = require("./MongoCache")
-logger = require 'logger-sharelatex'
-metrics = require('metrics-sharelatex')
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+let LearnedWordsManager;
+const db = require("./DB");
+const mongoCache = require("./MongoCache");
+const logger = require('logger-sharelatex');
+const metrics = require('metrics-sharelatex');
 
-module.exports = LearnedWordsManager =
-	learnWord: (user_token, word, callback = (error)->) ->
-		mongoCache.del(user_token)
-		db.spellingPreferences.update {
+module.exports = (LearnedWordsManager = {
+	learnWord(user_token, word, callback) {
+		if (callback == null) { callback = function(error){}; }
+		mongoCache.del(user_token);
+		return db.spellingPreferences.update({
 			token: user_token
 		}, {
-			$push: learnedWords: word
+			$push: { learnedWords: word
+		}
 		}, {
 			upsert: true
-		}, callback
+		}, callback);
+	},
 
-	getLearnedWords: (user_token, callback = (error, words)->) ->
-		mongoCachedWords = mongoCache.get(user_token)
-		if mongoCachedWords?
-			metrics.inc "mongoCache", 0.1, {status: "hit"}
-			return callback(null, mongoCachedWords)
+	getLearnedWords(user_token, callback) {
+		if (callback == null) { callback = function(error, words){}; }
+		const mongoCachedWords = mongoCache.get(user_token);
+		if (mongoCachedWords != null) {
+			metrics.inc("mongoCache", 0.1, {status: "hit"});
+			return callback(null, mongoCachedWords);
+		}
 
-		metrics.inc "mongoCache", 0.1, {status: "miss"}
-		logger.info user_token:user_token, "mongoCache miss"
+		metrics.inc("mongoCache", 0.1, {status: "miss"});
+		logger.info({user_token}, "mongoCache miss");
 		
-		db.spellingPreferences.findOne token: user_token, (error, preferences) ->
-			return callback error if error?
-			words = preferences?.learnedWords || []
-			mongoCache.set(user_token, words)
-			callback null, words
+		return db.spellingPreferences.findOne({token: user_token}, function(error, preferences) {
+			if (error != null) { return callback(error); }
+			const words = (preferences != null ? preferences.learnedWords : undefined) || [];
+			mongoCache.set(user_token, words);
+			return callback(null, words);
+		});
+	},
 
-	deleteUsersLearnedWords: (user_token, callback =(error)->)->
-		db.spellingPreferences.remove token: user_token, callback
+	deleteUsersLearnedWords(user_token, callback){
+		if (callback == null) { callback = function(error){}; }
+		return db.spellingPreferences.remove({token: user_token}, callback);
+	}
+});
 
 
 [
 	'learnWord',
 	'getLearnedWords'
-].map (method) ->
-	metrics.timeAsyncMethod(LearnedWordsManager, method, 'mongo.LearnedWordsManager', logger)
+].map(method => metrics.timeAsyncMethod(LearnedWordsManager, method, 'mongo.LearnedWordsManager', logger));

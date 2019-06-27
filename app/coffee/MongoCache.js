@@ -1,8 +1,9 @@
-LRU = require("lru-cache")
-cacheOpts = 
-	max: 15000
+const LRU = require("lru-cache");
+const cacheOpts = { 
+	max: 15000,
 	maxAge: 1000 * 60 * 60 * 10
+};
 
-cache = LRU(cacheOpts)
+const cache = LRU(cacheOpts);
 
-module.exports = cache
+module.exports = cache;
