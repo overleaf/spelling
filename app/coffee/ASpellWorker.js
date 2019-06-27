@@ -1,117 +1,155 @@
-child_process = require("child_process")
-logger = require 'logger-sharelatex'
-metrics = require('metrics-sharelatex')
-_ = require "underscore"
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * DS205: Consider reworking code to avoid use of IIFEs
+ * DS207: Consider shorter variations of null checks
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const child_process = require("child_process");
+const logger = require('logger-sharelatex');
+const metrics = require('metrics-sharelatex');
+const _ = require("underscore");
 
-BATCH_SIZE = 100
+const BATCH_SIZE = 100;
 
-class ASpellWorker
-	constructor: (language) ->
-		@language = language
-		@count = 0
-		@pipe = child_process.spawn("aspell", ["pipe", "-t", "--encoding=utf-8", "-d", language])
-		logger.info process: @pipe.pid, lang: @language, "starting new aspell worker"
-		metrics.inc "aspellWorker", 1, {status: "start", method: @language}
-		@pipe.on 'exit', () =>
-			@state = 'killed'
-			logger.info process: @pipe.pid, lang: @language, "aspell worker has exited"
-			metrics.inc "aspellWorker" , 1, {status: "exit", method: @language}
-		@pipe.on 'close', () =>
-			@state = 'closed' unless @state == 'killed'
-			if @callback?
-				logger.err process: @pipe.pid, lang: @language, "aspell worker closed output streams with uncalled callback"
-				@callback new Error("aspell worker closed output streams with uncalled callback"), []
-				@callback = null
-		@pipe.on 'error', (err) =>
-			@state = 'error' unless @state == 'killed'
-			logger.log process: @pipe.pid, error: err, stdout: output.slice(-1024), stderr: error.slice(-1024), lang: @language, "aspell worker error"
-			if @callback?
-				@callback err, []
-				@callback = null
-		@pipe.stdin.on 'error', (err) =>
-			@state = 'error' unless @state == 'killed'
-			logger.info process: @pipe.pid, error: err, stdout: output.slice(-1024), stderr: error.slice(-1024), lang: @language, "aspell worker error on stdin"
-			if @callback?
-				@callback err, []
-				@callback = null
+class ASpellWorker {
+	constructor(language) {
+		this.language = language;
+		this.count = 0;
+		this.pipe = child_process.spawn("aspell", ["pipe", "-t", "--encoding=utf-8", "-d", language]);
+		logger.info({process: this.pipe.pid, lang: this.language}, "starting new aspell worker");
+		metrics.inc("aspellWorker", 1, {status: "start", method: this.language});
+		this.pipe.on('exit', () => {
+			this.state = 'killed';
+			logger.info({process: this.pipe.pid, lang: this.language}, "aspell worker has exited");
+			return metrics.inc("aspellWorker" , 1, {status: "exit", method: this.language});
+	});
+		this.pipe.on('close', () => {
+			if (this.state !== 'killed') { this.state = 'closed'; }
+			if (this.callback != null) {
+				logger.err({process: this.pipe.pid, lang: this.language}, "aspell worker closed output streams with uncalled callback");
+				this.callback(new Error("aspell worker closed output streams with uncalled callback"), []);
+				return this.callback = null;
+			}
+		});
+		this.pipe.on('error', err => {
+			if (this.state !== 'killed') { this.state = 'error'; }
+			logger.log({process: this.pipe.pid, error: err, stdout: output.slice(-1024), stderr: error.slice(-1024), lang: this.language}, "aspell worker error");
+			if (this.callback != null) {
+				this.callback(err, []);
+				return this.callback = null;
+			}
+		});
+		this.pipe.stdin.on('error', err => {
+			if (this.state !== 'killed') { this.state = 'error'; }
+			logger.info({process: this.pipe.pid, error: err, stdout: output.slice(-1024), stderr: error.slice(-1024), lang: this.language}, "aspell worker error on stdin");
+			if (this.callback != null) {
+				this.callback(err, []);
+				return this.callback = null;
+			}
+		});
 
-		output = ""
-		endMarker = new RegExp("^[a-z][a-z]", "m")
-		@pipe.stdout.on "data", (chunk) =>
-			output = output + chunk
-			# We receive the language code from Aspell as the end of data marker
-			if chunk.toString().match(endMarker)
-				if @callback?
-					@callback(null, output.slice())
-					@callback = null # only allow one callback in use
-				else
-					logger.err process: @pipe.pid, lang: @language, "end of data marker received when callback already used"
-				@state = 'ready'
-				output = ""
-				error = ""
+		var output = "";
+		const endMarker = new RegExp("^[a-z][a-z]", "m");
+		this.pipe.stdout.on("data", chunk => {
+			output = output + chunk;
+			// We receive the language code from Aspell as the end of data marker
+			if (chunk.toString().match(endMarker)) {
+				let error;
+				if (this.callback != null) {
+					this.callback(null, output.slice());
+					this.callback = null; // only allow one callback in use
+				} else {
+					logger.err({process: this.pipe.pid, lang: this.language}, "end of data marker received when callback already used");
+				}
+				this.state = 'ready';
+				output = "";
+				return error = "";
+			}
+		});
 
-		error = ""
-		@pipe.stderr.on "data", (chunk) =>
-			error = error + chunk
+		var error = "";
+		this.pipe.stderr.on("data", chunk => {
+			return error = error + chunk;
+		});
 
-		@pipe.stdout.on "end", () =>
-			# process has ended
-			@state = "end"
+		this.pipe.stdout.on("end", () => {
+			// process has ended
+			return this.state = "end";
+		});
+	}
 
-	isReady: () ->
-		return @state == 'ready'
+	isReady() {
+		return this.state === 'ready';
+	}
 
-	check: (words, callback) ->
-		# we will now send data to aspell, and be ready again when we
-		# receive the end of data marker
-		@state = 'busy'
-		if @callback? # only allow one callback in use
-			logger.err process: @pipe.pid, lang: @language, "CALLBACK ALREADY IN USE"
-			return @callback new Error("Aspell callback already in use - SHOULD NOT HAPPEN")
-		@callback = _.once callback # extra defence against double callback
-		@setTerseMode()
-		@write(words)
-		@flush()
+	check(words, callback) {
+		// we will now send data to aspell, and be ready again when we
+		// receive the end of data marker
+		this.state = 'busy';
+		if (this.callback != null) { // only allow one callback in use
+			logger.err({process: this.pipe.pid, lang: this.language}, "CALLBACK ALREADY IN USE");
+			return this.callback(new Error("Aspell callback already in use - SHOULD NOT HAPPEN"));
+		}
+		this.callback = _.once(callback); // extra defence against double callback
+		this.setTerseMode();
+		this.write(words);
+		return this.flush();
+	}
 
-	write: (words) ->
-		i = 0
-		while i < words.length
-			# batch up the words to check for efficiency
-			batch = words.slice(i, i + BATCH_SIZE)
-			@sendWords batch
-			i += BATCH_SIZE
+	write(words) {
+		let i = 0;
+		return (() => {
+			const result = [];
+			while (i < words.length) {
+			// batch up the words to check for efficiency
+				const batch = words.slice(i, i + BATCH_SIZE);
+				this.sendWords(batch);
+				result.push(i += BATCH_SIZE);
+			}
+			return result;
+		})();
+	}
 
-	flush: () ->
-		# get aspell to send an end of data marker "*" when ready
-		#@sendCommand("%")		# take the aspell pipe out of terse mode so we can look for a '*'
-		#@sendCommand("^ENDOFSTREAMMARKER") # send our marker which will generate a '*'
-		#@sendCommand("!")		# go back into terse mode
-		@sendCommand("$$l")
+	flush() {
+		// get aspell to send an end of data marker "*" when ready
+		//@sendCommand("%")		# take the aspell pipe out of terse mode so we can look for a '*'
+		//@sendCommand("^ENDOFSTREAMMARKER") # send our marker which will generate a '*'
+		//@sendCommand("!")		# go back into terse mode
+		return this.sendCommand("$$l");
+	}
 
-	shutdown: (reason) ->
-		logger.info process: @pipe.pid, reason: reason, 'shutting down'
-		@state = "closing"
-		@pipe.stdin.end()
+	shutdown(reason) {
+		logger.info({process: this.pipe.pid, reason}, 'shutting down');
+		this.state = "closing";
+		return this.pipe.stdin.end();
+	}
 
-	kill: (reason) ->
-		logger.info process: @pipe.pid, reason: reason, 'killing'
-		return if @state == 'killed'
-		@pipe.kill('SIGKILL')
+	kill(reason) {
+		logger.info({process: this.pipe.pid, reason}, 'killing');
+		if (this.state === 'killed') { return; }
+		return this.pipe.kill('SIGKILL');
+	}
 
-	setTerseMode: () ->
-		@sendCommand("!")
+	setTerseMode() {
+		return this.sendCommand("!");
+	}
 
-	sendWord: (word) ->
-		@sendCommand("^" + word)
+	sendWord(word) {
+		return this.sendCommand(`^${word}`);
+	}
 
-	sendWords: (words) ->
-		# Aspell accepts multiple words to check on the same line
-		# ^word1 word2 word3 ...
-		# See aspell.info, writing programs to use Aspell Through A Pipe
-		@sendCommand("^" + words.join(" "))
-		@count++
+	sendWords(words) {
+		// Aspell accepts multiple words to check on the same line
+		// ^word1 word2 word3 ...
+		// See aspell.info, writing programs to use Aspell Through A Pipe
+		this.sendCommand(`^${words.join(" ")}`);
+		return this.count++;
+	}
 
-	sendCommand: (command) ->
-		@pipe.stdin.write(command + "\n")
+	sendCommand(command) {
+		return this.pipe.stdin.write(command + "\n");
+	}
+}
 
-module.exports = ASpellWorker
+module.exports = ASpellWorker;
