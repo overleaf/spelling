@@ -1,70 +1,110 @@
-sinon = require 'sinon'
-chai = require 'chai'
-should = chai.should()
-SandboxedModule = require('sandboxed-module')
-assert = require("chai").assert
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const sinon = require('sinon');
+const chai = require('chai');
+const should = chai.should();
+const SandboxedModule = require('sandboxed-module');
+const { assert } = require("chai");
 
-describe "ASpell", ->
-	beforeEach ->
-		@ASpell = SandboxedModule.require "../../../app/js/ASpell", requires:
-			"logger-sharelatex":
-				log:->
-				info:->
-				err:->
-			'metrics-sharelatex':
-				gauge:->
-				inc: ->
+describe("ASpell", function() {
+	beforeEach(function() {
+		return this.ASpell = SandboxedModule.require("../../../app/js/ASpell", { requires: {
+			"logger-sharelatex": {
+				log() {},
+				info() {},
+				err() {}
+			},
+			'metrics-sharelatex': {
+				gauge() {},
+				inc() {}
+			}
+		}
+	}
+		);
+	});
 
-	describe "a correctly spelled word", ->
-		beforeEach (done) ->
-			@ASpell.checkWords "en", ["word"], (error, @result) => done()
+	describe("a correctly spelled word", function() {
+		beforeEach(function(done) {
+			return this.ASpell.checkWords("en", ["word"], (error, result) => { this.result = result; return done(); });
+		});
 
-		it "should not correct the word", ->
-			@result.length.should.equal 0
+		return it("should not correct the word", function() {
+			return this.result.length.should.equal(0);
+		});
+	});
 
-	describe "a misspelled word", ->
-		beforeEach (done) ->
-			@ASpell.checkWords "en", ["bussines"], (error, @result) => done()
+	describe("a misspelled word", function() {
+		beforeEach(function(done) {
+			return this.ASpell.checkWords("en", ["bussines"], (error, result) => { this.result = result; return done(); });
+		});
 
-		it "should correct the word", ->
-			@result.length.should.equal 1
-			@result[0].suggestions.indexOf("business").should.not.equal -1
+		return it("should correct the word", function() {
+			this.result.length.should.equal(1);
+			return this.result[0].suggestions.indexOf("business").should.not.equal(-1);
+		});
+	});
 
-	describe "multiple words", ->
-		beforeEach (done) ->
-			@ASpell.checkWords "en", ["bussines", "word", "neccesary"], (error, @result) => done()
+	describe("multiple words", function() {
+		beforeEach(function(done) {
+			return this.ASpell.checkWords("en", ["bussines", "word", "neccesary"], (error, result) => { this.result = result; return done(); });
+		});
 
-		it "should correct the incorrect words", ->
-			@result[0].index.should.equal 0
-			@result[0].suggestions.indexOf("business").should.not.equal -1
-			@result[1].index.should.equal 2
-			@result[1].suggestions.indexOf("necessary").should.not.equal -1
+		return it("should correct the incorrect words", function() {
+			this.result[0].index.should.equal(0);
+			this.result[0].suggestions.indexOf("business").should.not.equal(-1);
+			this.result[1].index.should.equal(2);
+			return this.result[1].suggestions.indexOf("necessary").should.not.equal(-1);
+		});
+	});
 
-	describe "without a valid language", ->
-		beforeEach (done) ->
-			@ASpell.checkWords "notALang", ["banana"], (@error, @result) => done()
+	describe("without a valid language", function() {
+		beforeEach(function(done) {
+			return this.ASpell.checkWords("notALang", ["banana"], (error, result) => { this.error = error; this.result = result; return done(); });
+		});
 
-		it "should return an error", ->
-			should.exist @error
+		return it("should return an error", function() {
+			return should.exist(this.error);
+		});
+	});
 
-	describe "when there are no suggestions", ->
-		beforeEach (done) ->
-			@ASpell.checkWords "en", ["asdkfjalkdjfadhfkajsdhfashdfjhadflkjadhflajsd"], (@error, @result) => done()
+	describe("when there are no suggestions", function() {
+		beforeEach(function(done) {
+			return this.ASpell.checkWords("en", ["asdkfjalkdjfadhfkajsdhfashdfjhadflkjadhflajsd"], (error, result) => { this.error = error; this.result = result; return done(); });
+		});
 
-		it "should return a blank array", ->
-			@result.length.should.equal 1
-			assert.deepEqual @result[0].suggestions, []
+		return it("should return a blank array", function() {
+			this.result.length.should.equal(1);
+			return assert.deepEqual(this.result[0].suggestions, []);
+	});
+});
 
-	describe "when the request times out", ->
-		beforeEach (done) ->
-			words = ("abcdefg" for i in [0..1000])
-			@ASpell.ASPELL_TIMEOUT = 1
-			@start = Date.now()
-			@ASpell.checkWords "en", words, (error, @result) => done()
+	return describe("when the request times out", function() {
+		beforeEach(function(done) {
+			const words = (__range__(0, 1000, true).map((i) => "abcdefg"));
+			this.ASpell.ASPELL_TIMEOUT = 1;
+			this.start = Date.now();
+			return this.ASpell.checkWords("en", words, (error, result) => { this.result = result; return done(); });
+		});
 
-		# Note that this test fails on OS X, due to differing pipe behaviour
-		# on killing the child process. It can be tested successfully on Travis
-		# or the CI server.
-		it "should return in reasonable time", () ->
-			delta = Date.now()-@start
-			delta.should.be.below(@ASpell.ASPELL_TIMEOUT + 1000)
+		// Note that this test fails on OS X, due to differing pipe behaviour
+		// on killing the child process. It can be tested successfully on Travis
+		// or the CI server.
+		return it("should return in reasonable time", function() {
+			const delta = Date.now()-this.start;
+			return delta.should.be.below(this.ASpell.ASPELL_TIMEOUT + 1000);
+		});
+	});
+});
+
+function __range__(left, right, inclusive) {
+  let range = [];
+  let ascending = left < right;
+  let end = !inclusive ? right : ascending ? right + 1 : right - 1;
+  for (let i = left; ascending ? i < end : i > end; ascending ? i++ : i--) {
+    range.push(i);
+  }
+  return range;
+}

@@ -1,97 +1,130 @@
-sinon = require('sinon')
-chai = require 'chai'
-expect = chai.expect
-SandboxedModule = require('sandboxed-module')
-modulePath = require('path').join __dirname, '../../../app/js/LearnedWordsManager'
-assert = require("chai").assert
-should = require("chai").should()
-describe "LearnedWordsManager", ->
-	beforeEach ->
-		@token = "a6b3cd919ge"
-		@callback = sinon.stub()
-		@db =
-			spellingPreferences:
+/*
+ * decaffeinate suggestions:
+ * DS102: Remove unnecessary code created because of implicit returns
+ * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
+ */
+const sinon = require('sinon');
+const chai = require('chai');
+const { expect } = chai;
+const SandboxedModule = require('sandboxed-module');
+const modulePath = require('path').join(__dirname, '../../../app/js/LearnedWordsManager');
+const { assert } = require("chai");
+const should = require("chai").should();
+describe("LearnedWordsManager", function() {
+	beforeEach(function() {
+		this.token = "a6b3cd919ge";
+		this.callback = sinon.stub();
+		this.db = {
+			spellingPreferences: {
 				update: sinon.stub().callsArg(3)
-		@cache = 
-			get:sinon.stub()
-			set:sinon.stub()
+			}
+		};
+		this.cache = { 
+			get:sinon.stub(),
+			set:sinon.stub(),
 			del:sinon.stub()
-		@LearnedWordsManager = SandboxedModule.require modulePath, requires:
-			"./DB" : @db
-			"./MongoCache":@cache
-			"logger-sharelatex":
-				log:->
-				err:->
-				info:->
+		};
+		return this.LearnedWordsManager = SandboxedModule.require(modulePath, { requires: {
+			"./DB" : this.db,
+			"./MongoCache":this.cache,
+			"logger-sharelatex": {
+				log() {},
+				err() {},
+				info() {}
+			},
 			'metrics-sharelatex': {timeAsyncMethod: sinon.stub(), inc: sinon.stub()}
+		}
+	});});
 
-	describe "learnWord", ->
-		beforeEach ->
-			@word = "instanton"
-			@LearnedWordsManager.learnWord @token, @word, @callback
+	describe("learnWord", function() {
+		beforeEach(function() {
+			this.word = "instanton";
+			return this.LearnedWordsManager.learnWord(this.token, this.word, this.callback);
+		});
 
-		it "should insert the word in the word list in the database", ->
-			expect(
-				@db.spellingPreferences.update.calledWith({
-					token: @token
+		it("should insert the word in the word list in the database", function() {
+			return expect(
+				this.db.spellingPreferences.update.calledWith({
+					token: this.token
 				}, {
-					$push : learnedWords: @word
+					$push : { learnedWords: this.word
+				}
 				}, {
 					upsert: true
 				})
-			).to.equal true
+			).to.equal(true);
+		});
 
-		it "should call the callback", ->
-			expect(@callback.called).to.equal true
+		return it("should call the callback", function() {
+			return expect(this.callback.called).to.equal(true);
+		});
+	});
 
-	describe "getLearnedWords", ->
-		beforeEach ->
-			@wordList = ["apples", "bananas", "pears"]
-			@db.spellingPreferences.findOne = (conditions, callback) =>
-				callback null, learnedWords: @wordList
-			sinon.spy @db.spellingPreferences, "findOne"
-			@LearnedWordsManager.getLearnedWords @token, @callback
+	describe("getLearnedWords", function() {
+		beforeEach(function() {
+			this.wordList = ["apples", "bananas", "pears"];
+			this.db.spellingPreferences.findOne = (conditions, callback) => {
+				return callback(null, {learnedWords: this.wordList});
+			};
+			sinon.spy(this.db.spellingPreferences, "findOne");
+			return this.LearnedWordsManager.getLearnedWords(this.token, this.callback);
+		});
 
-		it "should get the word list for the given user", ->
-			expect(
-				@db.spellingPreferences.findOne.calledWith token: @token
-			).to.equal true
+		it("should get the word list for the given user", function() {
+			return expect(
+				this.db.spellingPreferences.findOne.calledWith({token: this.token})
+			).to.equal(true);
+		});
 
-		it "should return the word list in the callback", ->
-			expect(@callback.calledWith null, @wordList).to.equal true
+		return it("should return the word list in the callback", function() {
+			return expect(this.callback.calledWith(null, this.wordList)).to.equal(true);
+		});
+	});
 
 	
-	describe "caching the result", ->
-		it 'should use the cache first if it is primed', (done)->
-			@wordList = ["apples", "bananas", "pears"]
-			@cache.get.returns(@wordList)
-			@db.spellingPreferences.findOne = sinon.stub()
-			@LearnedWordsManager.getLearnedWords @token, (err, spellings)=>
-				@db.spellingPreferences.findOne.called.should.equal false
-				assert.deepEqual @wordList, spellings
-				done()
+	describe("caching the result", function() {
+		it('should use the cache first if it is primed', function(done){
+			this.wordList = ["apples", "bananas", "pears"];
+			this.cache.get.returns(this.wordList);
+			this.db.spellingPreferences.findOne = sinon.stub();
+			return this.LearnedWordsManager.getLearnedWords(this.token, (err, spellings)=> {
+				this.db.spellingPreferences.findOne.called.should.equal(false);
+				assert.deepEqual(this.wordList, spellings);
+				return done();
+			});
+		});
 
-		it 'should set the cache after hitting the db', (done)->
-			@wordList = ["apples", "bananas", "pears"]
-			@db.spellingPreferences.findOne = sinon.stub().callsArgWith(1, null, learnedWords: @wordList)
-			@LearnedWordsManager.getLearnedWords @token, (err, spellings)=>
-				@cache.set.calledWith(@token, @wordList).should.equal true
-				done()
+		it('should set the cache after hitting the db', function(done){
+			this.wordList = ["apples", "bananas", "pears"];
+			this.db.spellingPreferences.findOne = sinon.stub().callsArgWith(1, null, {learnedWords: this.wordList});
+			return this.LearnedWordsManager.getLearnedWords(this.token, (err, spellings)=> {
+				this.cache.set.calledWith(this.token, this.wordList).should.equal(true);
+				return done();
+			});
+		});
 
-		it 'should break cache when update is called', (done)->
-			@word = "instanton"
-			@LearnedWordsManager.learnWord @token, @word, =>
-				@cache.del.calledWith(@token).should.equal true
-				done()
+		return it('should break cache when update is called', function(done){
+			this.word = "instanton";
+			return this.LearnedWordsManager.learnWord(this.token, this.word, () => {
+				this.cache.del.calledWith(this.token).should.equal(true);
+				return done();
+			});
+		});
+	});
 
 
-	describe "deleteUsersLearnedWords", ->
-		beforeEach ->
-			@db.spellingPreferences.remove = sinon.stub().callsArgWith(1)
+	return describe("deleteUsersLearnedWords", function() {
+		beforeEach(function() {
+			return this.db.spellingPreferences.remove = sinon.stub().callsArgWith(1);
+		});
 
 
-		it "should get the word list for the given user", (done)->
-			@LearnedWordsManager.deleteUsersLearnedWords @token, =>
-				@db.spellingPreferences.remove.calledWith(token: @token).should.equal true
-				done()
+		return it("should get the word list for the given user", function(done){
+			return this.LearnedWordsManager.deleteUsersLearnedWords(this.token, () => {
+				this.db.spellingPreferences.remove.calledWith({token: this.token}).should.equal(true);
+				return done();
+			});
+		});
+	});
+});
 
