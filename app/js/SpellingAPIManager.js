@@ -6,72 +6,77 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-let SpellingAPIManager;
-const ASpell = require('./ASpell');
-const LearnedWordsManager = require('./LearnedWordsManager');
-const async = require('async');
+let SpellingAPIManager
+const ASpell = require('./ASpell')
+const LearnedWordsManager = require('./LearnedWordsManager')
+const async = require('async')
 
-module.exports = (SpellingAPIManager = {
+module.exports = SpellingAPIManager = {
+  whitelist: ['ShareLaTeX', 'sharelatex', 'LaTeX', 'http', 'https', 'www'],
 
-	whitelist: [
-		'ShareLaTeX',
-		'sharelatex',
-		'LaTeX',
-		'http',
-		'https',
-		'www'
-	],
+  runRequest(token, request, callback) {
+    if (callback == null) {
+      callback = function(error, result) {}
+    }
+    if (request.words == null) {
+      return callback(new Error('malformed JSON'))
+    }
 
-	runRequest(token, request, callback) {
-		if (callback == null) { callback = function(error, result) {}; }
-		if ((request.words == null)) {
-			return callback(new Error("malformed JSON"));
-		}
+    const lang = request.language || 'en'
 
-		const lang = request.language || "en";
+    const check = (words, callback) =>
+      ASpell.checkWords(lang, words, (error, misspellings) =>
+        callback(error, { misspellings })
+      )
+    const wordsToCheck = request.words || []
 
-		const check = (words, callback) =>
-			ASpell.checkWords(lang, words, (error, misspellings) => callback(error, {misspellings}))
-		;
+    if (token != null) {
+      return LearnedWordsManager.getLearnedWords(token, function(
+        error,
+        learnedWords
+      ) {
+        if (error != null) {
+          return callback(error)
+        }
+        const words = wordsToCheck.slice(0, 10000)
+        return check(words, function(error, result) {
+          if (error != null) {
+            return callback(error)
+          }
+          result.misspellings = result.misspellings.filter(function(m) {
+            const word = words[m.index]
+            return (
+              learnedWords.indexOf(word) === -1 &&
+              SpellingAPIManager.whitelist.indexOf(word) === -1
+            )
+          })
+          return callback(error, result)
+        })
+      })
+    } else {
+      return check(wordsToCheck, callback)
+    }
+  },
 
-		const wordsToCheck = request.words || [];
+  learnWord(token, request, callback) {
+    if (callback == null) {
+      callback = function(error) {}
+    }
+    if (request.word == null) {
+      return callback(new Error('malformed JSON'))
+    }
+    if (token == null) {
+      return callback(new Error('no token provided'))
+    }
 
-		if (token != null) {
-			return LearnedWordsManager.getLearnedWords(token, function(error, learnedWords) {
-				if (error != null) { return callback(error); }
-				const words = (wordsToCheck).slice(0,10000);
-				return check(words, function(error, result) {
-					if (error != null) { return callback(error); }
-					result.misspellings = result.misspellings.filter(function(m) {
-						const word = words[m.index];
-						return (learnedWords.indexOf(word) === -1) && (SpellingAPIManager.whitelist.indexOf(word) === -1);
-					});
-					return callback(error, result);
-				});
-			});
-		} else {
-			return check(wordsToCheck, callback);
-		}
-	},
+    return LearnedWordsManager.learnWord(token, request.word, callback)
+  },
 
-	learnWord(token, request, callback) {
-		if (callback == null) { callback = function(error) {}; }
-		if ((request.word == null)) {
-			return callback(new Error("malformed JSON"));
-		}
-		if ((token == null)) {
-			return callback(new Error("no token provided"));
-		}
+  deleteDic(token, callback) {
+    return LearnedWordsManager.deleteUsersLearnedWords(token, callback)
+  },
 
-		return LearnedWordsManager.learnWord(token, request.word, callback);
-	},
-
-	deleteDic(token, callback){
-		return LearnedWordsManager.deleteUsersLearnedWords(token, callback);
-	},
-
-	getDic(token, callback){
-		return LearnedWordsManager.getLearnedWords(token, callback);
-	}
-});
-
+  getDic(token, callback) {
+    return LearnedWordsManager.getLearnedWords(token, callback)
+  }
+}
