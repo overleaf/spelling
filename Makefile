@@ -1,7 +1,7 @@
 # This file was auto-generated, do not edit it directly.
 # Instead run bin/update_build_scripts from
 # https://github.com/sharelatex/sharelatex-dev-environment
-# Version: 1.1.12
+# Version: 1.1.21
 
 BUILD_NUMBER ?= local
 BRANCH_NAME ?= $(shell git rev-parse --abbrev-ref HEAD)
@@ -16,17 +16,24 @@ DOCKER_COMPOSE := BUILD_NUMBER=$(BUILD_NUMBER) \
 clean:
 	docker rmi ci/$(PROJECT_NAME):$(BRANCH_NAME)-$(BUILD_NUMBER)
 	docker rmi gcr.io/overleaf-ops/$(PROJECT_NAME):$(BRANCH_NAME)-$(BUILD_NUMBER)
-	rm -f app.js
-	rm -rf app/js
-	rm -rf test/unit/js
-	rm -rf test/acceptance/js
 
-test: test_unit test_acceptance
+format:
+	$(DOCKER_COMPOSE) run --rm test_unit npm run format
+
+format_fix:
+	$(DOCKER_COMPOSE) run --rm test_unit npm run format:fix
+
+lint:
+	$(DOCKER_COMPOSE) run --rm test_unit npm run lint
+
+test: format lint test_unit test_acceptance
 
 test_unit:
 	@[ ! -d test/unit ] && echo "spelling has no unit tests" || $(DOCKER_COMPOSE) run --rm test_unit
 
-test_acceptance: test_clean test_acceptance_pre_run # clear the database before each acceptance test run
+test_acceptance: test_clean test_acceptance_pre_run test_acceptance_run
+
+test_acceptance_run:
 	@[ ! -d test/acceptance ] && echo "spelling has no acceptance tests" || $(DOCKER_COMPOSE) run --rm test_acceptance
 
 test_clean:
