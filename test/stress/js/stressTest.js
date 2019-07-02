@@ -29,7 +29,7 @@ const generateCorrectWords = function(n) {
   const words = []
   const N = Math.random() > 0.5 ? wordlist.length : 10
   for (
-    let i = 1, end = n, asc = 1 <= end;
+    let i = 1, end = n, asc = end >= 1;
     asc ? i <= end : i >= end;
     asc ? i++ : i--
   ) {
@@ -43,7 +43,7 @@ const generateIncorrectWords = function(n) {
   const words = []
   const N = wordlist.length
   for (
-    let i = 1, end = n, asc = 1 <= end;
+    let i = 1, end = n, asc = end >= 1;
     asc ? i <= end : i >= end;
     asc ? i++ : i--
   ) {
@@ -104,7 +104,7 @@ const make_request = function(correctWords, incorrectWords, callback) {
         for (
           i = 0,
             end = Math.max(expected.length, misspellings.length) - 1,
-            asc = 0 <= end;
+            asc = end >= 0;
           asc ? i <= end : i >= end;
           asc ? i++ : i--
         ) {

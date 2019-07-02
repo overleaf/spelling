@@ -55,7 +55,7 @@ class ASpellRunner {
       if (error != null) {
         return callback(error)
       }
-      //output = @removeAspellHeader(output)
+      // output = @removeAspellHeader(output)
       const suggestions = this.getSuggestions(language, output)
       const results = []
       let hits = 0
@@ -127,7 +127,7 @@ class ASpellRunner {
     return suggestions
   }
 
-  //removeAspellHeader: (output) -> output.slice(1)
+  // removeAspellHeader: (output) -> output.slice(1)
 
   runAspellOnWords(language, words, callback) {
     // send words to aspell, get back string output for those words

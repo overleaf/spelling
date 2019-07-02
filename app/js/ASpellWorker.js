@@ -171,9 +171,9 @@ class ASpellWorker {
 
   flush() {
     // get aspell to send an end of data marker "*" when ready
-    //@sendCommand("%")		# take the aspell pipe out of terse mode so we can look for a '*'
-    //@sendCommand("^ENDOFSTREAMMARKER") # send our marker which will generate a '*'
-    //@sendCommand("!")		# go back into terse mode
+    // @sendCommand("%")		# take the aspell pipe out of terse mode so we can look for a '*'
+    // @sendCommand("^ENDOFSTREAMMARKER") # send our marker which will generate a '*'
+    // @sendCommand("!")		# go back into terse mode
     return this.sendCommand('$$l')
   }
 
