@@ -66,7 +66,6 @@ module.exports = LearnedWordsManager = {
     return db.spellingPreferences.remove({ token: userToken }, callback)
   }
 }
-
 ;['learnWord', 'getLearnedWords'].map(method =>
   metrics.timeAsyncMethod(
     LearnedWordsManager,

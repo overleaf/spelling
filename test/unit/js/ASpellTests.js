@@ -1,5 +1,6 @@
 /* eslint-disable
-    handle-callback-err
+    handle-callback-err,
+    no-undef
 */
 // TODO: This file was created by bulk-decaffeinate.
 // Sanity-check the conversion and remove this comment.

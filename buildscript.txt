@@ -1,8 +1,8 @@
 spelling
 --node-version=6.16.0
---script-version=1.1.12
+--script-version=1.1.21
 --build-target=docker
 --dependencies=mongo,redis
 --language=es
---docker-repos=quay.io/sharelatex
+--docker-repos=gcr.io/overleaf-ops
 --acceptance-creds=None

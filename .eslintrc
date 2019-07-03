@@ -1,8 +1,12 @@
+// this file was auto-generated, do not edit it directly.
+// instead run bin/update_build_scripts from
+// https://github.com/sharelatex/sharelatex-dev-environment
+// Version: 1.1.21
 {
   "extends": [
     "standard",
     "prettier",
-    "prettier/standard"
+    "prettier/standard",
   ],
   "plugins": [
     "mocha",
@@ -10,7 +14,7 @@
     "chai-friendly"
   ],
   "env": {
-    "mocha": true
+    "node": true
   },
   "rules": {
     // Add some mocha specific rules
