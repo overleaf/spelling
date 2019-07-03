@@ -36,7 +36,7 @@ pipeline {
       }
     }
 
-    // should be disabled once Node version is updated to >=8
+    // should be enabled once Node version is updated to >=8
     // stage('Linting') {
     //   steps {
     //     sh 'DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make format'
