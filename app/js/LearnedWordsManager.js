@@ -13,14 +13,14 @@ const logger = require('logger-sharelatex')
 const metrics = require('metrics-sharelatex')
 
 module.exports = LearnedWordsManager = {
-  learnWord(user_token, word, callback) {
+  learnWord(userToken, word, callback) {
     if (callback == null) {
-      callback = function(error) {}
+      callback = () => {}
     }
-    mongoCache.del(user_token)
+    mongoCache.del(userToken)
     return db.spellingPreferences.update(
       {
-        token: user_token
+        token: userToken
       },
       {
         $push: { learnedWords: word }
@@ -32,20 +32,20 @@ module.exports = LearnedWordsManager = {
     )
   },
 
-  getLearnedWords(user_token, callback) {
+  getLearnedWords(userToken, callback) {
     if (callback == null) {
-      callback = function(error, words) {}
+      callback = () => {}
     }
-    const mongoCachedWords = mongoCache.get(user_token)
+    const mongoCachedWords = mongoCache.get(userToken)
     if (mongoCachedWords != null) {
       metrics.inc('mongoCache', 0.1, { status: 'hit' })
       return callback(null, mongoCachedWords)
     }
 
     metrics.inc('mongoCache', 0.1, { status: 'miss' })
-    logger.info({ user_token }, 'mongoCache miss')
+    logger.info({ userToken }, 'mongoCache miss')
 
-    return db.spellingPreferences.findOne({ token: user_token }, function(
+    return db.spellingPreferences.findOne({ token: userToken }, function(
       error,
       preferences
     ) {
@@ -54,16 +54,16 @@ module.exports = LearnedWordsManager = {
       }
       const words =
         (preferences != null ? preferences.learnedWords : undefined) || []
-      mongoCache.set(user_token, words)
+      mongoCache.set(userToken, words)
       return callback(null, words)
     })
   },
 
-  deleteUsersLearnedWords(user_token, callback) {
+  deleteUsersLearnedWords(userToken, callback) {
     if (callback == null) {
-      callback = function(error) {}
+      callback = () => {}
     }
-    return db.spellingPreferences.remove({ token: user_token }, callback)
+    return db.spellingPreferences.remove({ token: userToken }, callback)
   }
 }
 

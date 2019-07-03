@@ -9,14 +9,13 @@
 let SpellingAPIManager
 const ASpell = require('./ASpell')
 const LearnedWordsManager = require('./LearnedWordsManager')
-const async = require('async')
 
 module.exports = SpellingAPIManager = {
   whitelist: ['ShareLaTeX', 'sharelatex', 'LaTeX', 'http', 'https', 'www'],
 
   runRequest(token, request, callback) {
     if (callback == null) {
-      callback = function(error, result) {}
+      callback = () => {}
     }
     if (request.words == null) {
       return callback(new Error('malformed JSON'))
@@ -60,7 +59,7 @@ module.exports = SpellingAPIManager = {
 
   learnWord(token, request, callback) {
     if (callback == null) {
-      callback = function(error) {}
+      callback = () => {}
     }
     if (request.word == null) {
       return callback(new Error('malformed JSON'))

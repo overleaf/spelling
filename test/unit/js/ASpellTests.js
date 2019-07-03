@@ -1,3 +1,6 @@
+/* eslint-disable
+    handle-callback-err
+*/
 // TODO: This file was created by bulk-decaffeinate.
 // Sanity-check the conversion and remove this comment.
 /*
@@ -5,7 +8,6 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const sinon = require('sinon')
 const chai = require('chai')
 const should = chai.should()
 const SandboxedModule = require('sandboxed-module')

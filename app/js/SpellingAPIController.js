@@ -7,12 +7,11 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-let SpellingAPIController
 const SpellingAPIManager = require('./SpellingAPIManager')
 const logger = require('logger-sharelatex')
 const metrics = require('metrics-sharelatex')
 
-module.exports = SpellingAPIController = {
+module.exports = {
   check(req, res, next) {
     metrics.inc('spelling-check', 0.1)
     logger.info(

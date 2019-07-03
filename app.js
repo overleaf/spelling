@@ -18,7 +18,6 @@ metrics.memory.monitor(logger)
 
 const SpellingAPIController = require('./app/js/SpellingAPIController')
 const express = require('express')
-const Path = require('path')
 const server = express()
 metrics.injectMetricsRoute(server)
 const bodyParser = require('body-parser')

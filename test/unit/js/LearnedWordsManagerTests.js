@@ -1,3 +1,6 @@
+/* eslint-disable
+    handle-callback-err
+*/
 // TODO: This file was created by bulk-decaffeinate.
 // Sanity-check the conversion and remove this comment.
 /*
@@ -14,7 +17,6 @@ const modulePath = require('path').join(
   '../../../app/js/LearnedWordsManager'
 )
 const { assert } = require('chai')
-const should = require('chai').should()
 describe('LearnedWordsManager', function() {
   beforeEach(function() {
     this.token = 'a6b3cd919ge'

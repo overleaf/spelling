@@ -8,7 +8,6 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 let ASpell
-const async = require('async')
 const ASpellWorkerPool = require('./ASpellWorkerPool')
 const LRU = require('lru-cache')
 const logger = require('logger-sharelatex')
@@ -49,13 +48,13 @@ setInterval(function() {
 class ASpellRunner {
   checkWords(language, words, callback) {
     if (callback == null) {
-      callback = function(error, result) {}
+      callback = () => {}
     }
     return this.runAspellOnWords(language, words, (error, output) => {
       if (error != null) {
         return callback(error)
       }
-      //output = @removeAspellHeader(output)
+      // output = @removeAspellHeader(output)
       const suggestions = this.getSuggestions(language, output)
       const results = []
       let hits = 0
@@ -127,7 +126,7 @@ class ASpellRunner {
     return suggestions
   }
 
-  //removeAspellHeader: (output) -> output.slice(1)
+  // removeAspellHeader: (output) -> output.slice(1)
 
   runAspellOnWords(language, words, callback) {
     // send words to aspell, get back string output for those words
@@ -142,7 +141,7 @@ class ASpellRunner {
     // start = new Date()
 
     if (callback == null) {
-      callback = function(error, output) {}
+      callback = () => {}
     }
     const newWord = {}
     for (let word of Array.from(words)) {
@@ -165,7 +164,7 @@ module.exports = ASpell = {
   // http://aspell.net/man-html/Through-A-Pipe.html
   checkWords(language, words, callback) {
     if (callback == null) {
-      callback = function(error, result) {}
+      callback = () => {}
     }
     const runner = new ASpellRunner()
     return runner.checkWords(language, words, callback)

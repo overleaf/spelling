@@ -7,7 +7,7 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-const child_process = require('child_process')
+const childProcess = require('child_process')
 const logger = require('logger-sharelatex')
 const metrics = require('metrics-sharelatex')
 const _ = require('underscore')
@@ -18,7 +18,7 @@ class ASpellWorker {
   constructor(language) {
     this.language = language
     this.count = 0
-    this.pipe = child_process.spawn('aspell', [
+    this.pipe = childProcess.spawn('aspell', [
       'pipe',
       '-t',
       '--encoding=utf-8',
@@ -104,7 +104,6 @@ class ASpellWorker {
       output = output + chunk
       // We receive the language code from Aspell as the end of data marker
       if (chunk.toString().match(endMarker)) {
-        let error
         if (this.callback != null) {
           this.callback(null, output.slice())
           this.callback = null // only allow one callback in use
@@ -116,7 +115,6 @@ class ASpellWorker {
         }
         this.state = 'ready'
         output = ''
-        return (error = '')
       }
     })
 
@@ -171,9 +169,9 @@ class ASpellWorker {
 
   flush() {
     // get aspell to send an end of data marker "*" when ready
-    //@sendCommand("%")		# take the aspell pipe out of terse mode so we can look for a '*'
-    //@sendCommand("^ENDOFSTREAMMARKER") # send our marker which will generate a '*'
-    //@sendCommand("!")		# go back into terse mode
+    // @sendCommand("%")		# take the aspell pipe out of terse mode so we can look for a '*'
+    // @sendCommand("^ENDOFSTREAMMARKER") # send our marker which will generate a '*'
+    // @sendCommand("!")		# go back into terse mode
     return this.sendCommand('$$l')
   }
 

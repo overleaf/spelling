@@ -4,10 +4,10 @@ pipeline {
   agent any
 
   environment {
-    GIT_PROJECT = "spelling"
+    GIT_PROJECT = "spelling-sharelatex"
     JENKINS_WORKFLOW = "spelling-sharelatex"
     TARGET_URL = "${env.JENKINS_URL}blue/organizations/jenkins/${JENKINS_WORKFLOW}/detail/$BRANCH_NAME/$BUILD_NUMBER/pipeline"
-    GIT_API_URL = "https://api.github.com/repos/overleaf/${GIT_PROJECT}/statuses/$GIT_COMMIT"
+    GIT_API_URL = "https://api.github.com/repos/sharelatex/${GIT_PROJECT}/statuses/$GIT_COMMIT"
   }
 
   triggers {
@@ -54,11 +54,11 @@ pipeline {
         sh 'touch build.tar.gz' // Avoid tar warning about files changing during read
         sh 'DOCKER_COMPOSE_FLAGS="-f docker-compose.ci.yml" make tar'
         
-        withCredentials([file(credentialsId: 'gcr.io_overleaf-ops', variable: 'DOCKER_REPO_KEY_PATH')]) {
-          sh 'docker login -u _json_key --password-stdin https://gcr.io/overleaf-ops < ${DOCKER_REPO_KEY_PATH}'
+        withCredentials([file(credentialsId: 'quay.io_sharelatex', variable: 'DOCKER_REPO_KEY_PATH')]) {
+          sh 'docker login -u _json_key --password-stdin https://quay.io/sharelatex < ${DOCKER_REPO_KEY_PATH}'
         }
-        sh 'DOCKER_REPO=gcr.io/overleaf-ops make publish'
-        sh 'docker logout https://gcr.io/overleaf-ops'
+        sh 'DOCKER_REPO=quay.io/sharelatex make publish'
+        sh 'docker logout https://quay.io/sharelatex'
         
       }
     }

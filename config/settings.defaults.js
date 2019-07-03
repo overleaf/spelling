@@ -1,7 +1,6 @@
-let Settings
 const Path = require('path')
 
-module.exports = Settings = {
+module.exports = {
   internal: {
     spelling: {
       port: 3005,
