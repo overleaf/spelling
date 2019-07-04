@@ -39,7 +39,11 @@ setInterval(function() {
       logger.log({ err }, 'error writing cache file')
       return fs.unlink(cacheFsPathTmp)
     } else {
-      fs.rename(cacheFsPathTmp, cacheFsPath)
+      fs.rename(cacheFsPathTmp, cacheFsPath, err => {
+        if (err) {
+          logger.error({ err }, 'error renaming cache file')
+        }
+      })
       return logger.log({ len: dump.length, cacheFsPath }, 'wrote cache file')
     }
   })
