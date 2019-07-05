@@ -42,9 +42,10 @@ setInterval(function() {
       fs.rename(cacheFsPathTmp, cacheFsPath, err => {
         if (err) {
           logger.error({ err }, 'error renaming cache file')
+        } else {
+          logger.log({ len: dump.length, cacheFsPath }, 'wrote cache file')
         }
       })
-      return logger.log({ len: dump.length, cacheFsPath }, 'wrote cache file')
     }
   })
 }, 30 * OneMinute)
