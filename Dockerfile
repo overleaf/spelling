@@ -1,19 +1,17 @@
-FROM node:10.16.0 as app
+FROM nixos/nix:2.2.1 as builder
 
 WORKDIR /app
 
-#wildcard as some files may not be in all repos
-COPY package*.json npm-shrink*.json /app/
-
-RUN npm install --quiet
-
 COPY . /app
 
+RUN nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs && \
+    nix-channel --update && \
+    nix-shell --run 'npm install --quiet --only=prod'
 
 
 FROM node:10.16.0
 
-COPY --from=app /app /app
+COPY --from=builder /app /app
 
 WORKDIR /app
 RUN chmod 0755 ./install_deps.sh && ./install_deps.sh
