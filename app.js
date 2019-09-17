@@ -14,6 +14,12 @@ logger.initialize('spelling')
 if ((Settings.sentry != null ? Settings.sentry.dsn : undefined) != null) {
   logger.initializeErrorReporting(Settings.sentry.dsn)
 }
+if (Settings.catchErrors) {
+  process.removeAllListeners('uncaughtException')
+  process.on('uncaughtException', function(err) {
+    logger.error({ err }, 'uncaughtException')
+  })
+}
 metrics.memory.monitor(logger)
 
 const SpellingAPIController = require('./app/js/SpellingAPIController')
