@@ -1,6 +1,8 @@
 overleaf/spelling
 ===================
 
+Test what happens when a third-party makes a pull request.
+
 The backend spellcheck API that performs spell checking for Overleaf
 
 License
