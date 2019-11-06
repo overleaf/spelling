@@ -1,7 +1,7 @@
 overleaf/spelling
 ===================
 
-The backend spellcheck API that performs spell checking for Overleaf
+The backend spellcheck API that performs spell checking for Overleaf.
 
 License
 -------
