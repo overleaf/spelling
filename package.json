@@ -32,7 +32,7 @@
     "logger-sharelatex": "^1.8.0",
     "lru-cache": "^4.0.0",
     "metrics-sharelatex": "^2.2.0",
-    "mongojs": "2.4.0",
+    "mongojs": "^3.1.0",
     "node-statsd": "0.0.3",
     "redis": "~0.8.4",
     "request": "^2.88.0",
