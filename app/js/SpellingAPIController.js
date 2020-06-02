@@ -1,6 +1,7 @@
 const SpellingAPIManager = require('./SpellingAPIManager')
 const logger = require('logger-sharelatex')
 const metrics = require('metrics-sharelatex')
+const OError = require('@overleaf/o-error')
 
 function extractCheckRequestData(req) {
   const token = req.params ? req.params.user_id : undefined
