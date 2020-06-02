@@ -23,7 +23,7 @@ module.exports = {
     logger.info({ token, wordCount }, 'running check')
     SpellingAPIManager.runRequest(token, req.body, function(error, result) {
       if (error != null) {
-        console.error(
+        logger.error(
           OError.tag(error, 'error processing spelling request', {
             user_id: token,
             wordCount

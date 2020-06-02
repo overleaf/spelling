@@ -117,7 +117,7 @@ class ASpellWorker {
     this.pipe.stdout.on('data', data => {
       // We receive the language code from Aspell as the end of data marker in
       // the data.  The input is a utf8 encoded string.
-      let oldPos = output.length
+      const oldPos = output.length
       output = output + data
       // The end marker may cross the end of a chunk, so we optimise the search
       // using the regex lastIndex property.
