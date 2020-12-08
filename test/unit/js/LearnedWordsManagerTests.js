@@ -101,7 +101,7 @@ describe('LearnedWordsManager', function () {
         callback(null, { learnedWords: this.wordListWithDuplicates })
       }
       sinon.spy(this.db.spellingPreferences, 'findOne')
-      this.LearnedWordsManager.getLearnedWords(this.token, this.callback)
+      this.LearnedWordsManager.getLearnedWords(this.token, {}, this.callback)
     })
 
     it('should get the word list for the given user', function () {
@@ -120,12 +120,16 @@ describe('LearnedWordsManager', function () {
       this.wordList = ['apples', 'bananas', 'pears']
       this.cache.get.returns(this.wordList)
       this.db.spellingPreferences.findOne = sinon.stub()
-      this.LearnedWordsManager.getLearnedWords(this.token, (err, spellings) => {
-        expect(err).not.to.exist
-        this.db.spellingPreferences.findOne.called.should.equal(false)
-        assert.deepEqual(this.wordList, spellings)
-        done()
-      })
+      this.LearnedWordsManager.getLearnedWords(
+        this.token,
+        {},
+        (err, spellings) => {
+          expect(err).not.to.exist
+          this.db.spellingPreferences.findOne.called.should.equal(false)
+          assert.deepEqual(this.wordList, spellings)
+          done()
+        }
+      )
     })
 
     it('should set the cache after hitting the db', function (done) {
@@ -133,7 +137,7 @@ describe('LearnedWordsManager', function () {
       this.db.spellingPreferences.findOne = sinon
         .stub()
         .callsArgWith(1, null, { learnedWords: this.wordList })
-      this.LearnedWordsManager.getLearnedWords(this.token, () => {
+      this.LearnedWordsManager.getLearnedWords(this.token, {}, () => {
         this.cache.set.calledWith(this.token, this.wordList).should.equal(true)
         done()
       })
