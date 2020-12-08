@@ -41,20 +41,22 @@ const LearnedWordsManager = {
     )
   },
 
-  getLearnedWords(userToken, callback) {
+  getLearnedWords(userToken, options, callback) {
     if (callback == null) {
       callback = () => {}
     }
-    const mongoCachedWords = mongoCache.get(userToken)
-    if (mongoCachedWords != null) {
-      metrics.inc('mongoCache', 0.1, { status: 'hit' })
-      return callback(null, mongoCachedWords)
+    if (!options.skipCache) {
+      const mongoCachedWords = mongoCache.get(userToken)
+      if (mongoCachedWords != null) {
+        metrics.inc('mongoCache', 0.1, { status: 'hit' })
+        return callback(null, mongoCachedWords)
+      }
+
+      metrics.inc('mongoCache', 0.1, { status: 'miss' })
+      logger.info({ userToken }, 'mongoCache miss')
     }
 
-    metrics.inc('mongoCache', 0.1, { status: 'miss' })
-    logger.info({ userToken }, 'mongoCache miss')
-
-    db.spellingPreferences.findOne({ token: userToken }, function (
+    db.spellingPreferences.findOne({ token: userToken }, function(
       error,
       preferences
     ) {
@@ -94,7 +96,7 @@ const promises = {
 LearnedWordsManager.promises = promises
 
 module.exports = LearnedWordsManager
-;['learnWord', 'unlearnWord', 'getLearnedWords'].map((method) =>
+;['learnWord', 'unlearnWord', 'getLearnedWords'].map(method =>
   metrics.timeAsyncMethod(
     LearnedWordsManager,
     method,

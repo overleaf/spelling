@@ -50,8 +50,8 @@ const SpellingAPIManager = {
     return LearnedWordsManager.deleteUsersLearnedWords(token, callback)
   },
 
-  getDic(token, callback) {
-    return LearnedWordsManager.getLearnedWords(token, callback)
+  getDic(token, options, callback) {
+    return LearnedWordsManager.getLearnedWords(token, options, callback)
   }
 }
 
@@ -65,13 +65,16 @@ const promises = {
     // only the first 10K words are checked
     const wordSlice = request.words.slice(0, REQUEST_LIMIT)
 
+    const skipLearnedWords = request.skipLearnedWords
+
     const misspellings = await ASpell.promises.checkWords(lang, wordSlice)
 
-    if (token) {
+    if (token && !skipLearnedWords) {
       const learnedWords = await LearnedWordsManager.promises.getLearnedWords(
-        token
+        token,
+        {}
       )
-      const notLearntMisspellings = misspellings.filter((m) => {
+      const notLearntMisspellings = misspellings.filter(m => {
         const word = wordSlice[m.index]
         return (
           learnedWords.indexOf(word) === -1 &&
